@@ -22,11 +22,19 @@ SoftAesBlock softaes_block_decrypt(const SoftAesBlock block, const SoftAesBlock 
 SoftAesBlock softaes_block_encryptlast(const SoftAesBlock block, const SoftAesBlock rk);
 SoftAesBlock softaes_block_decryptlast(const SoftAesBlock block, const SoftAesBlock rk);
 
+void softaes_aegis_rotate8_x1(SoftAesBlock st[8]);
+void softaes_aegis_rotate6_x1(SoftAesBlock st[6]);
+
 static inline SoftAesBlock
 softaes_block_load(const uint8_t in[16])
 {
+#    ifdef NATIVE_LITTLE_ENDIAN
+    SoftAesBlock out;
+    memcpy(&out, in, 16);
+#    else
     const SoftAesBlock out = { LOAD32_LE(in + 0), LOAD32_LE(in + 4), LOAD32_LE(in + 8),
                                LOAD32_LE(in + 12) };
+#    endif
     return out;
 }
 
@@ -41,10 +49,14 @@ softaes_block_load64x2(const uint64_t a, const uint64_t b)
 static inline void
 softaes_block_store(uint8_t out[16], const SoftAesBlock in)
 {
+#    ifdef NATIVE_LITTLE_ENDIAN
+    memcpy(out, &in, 16);
+#    else
     STORE32_LE(out + 0, in.w0);
     STORE32_LE(out + 4, in.w1);
     STORE32_LE(out + 8, in.w2);
     STORE32_LE(out + 12, in.w3);
+#    endif
 }
 
 static inline SoftAesBlock
